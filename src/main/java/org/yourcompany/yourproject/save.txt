@@ -1,0 +1,128 @@
+    public double scoreV3(Rect rect){
+
+        // Get score image, invert, mask everything except polygon
+
+        BufferedImage baseImgWithRect = createImageWithRect(rect);
+        double[][] diffArr2 = subRealImages(baseImgWithRect, targetImage);
+        diffArr2 = invertArr(diffArr2);
+
+        BufferedImage polyImage = createRectMask(rect);
+        double[][] maskArr = arrFromImg(polyImage);
+        double[][] invertedMask = invertArr(maskArr);
+
+        double[][] finalArr = invertArr(mask(diffArr2, invertedMask));
+
+        double sum = 0;
+        for (int i = 0; i < finalArr.length; i++) {
+            for (int j = 0; j < finalArr[0].length; j++) {
+                sum += finalArr[i][j];
+            }
+        }
+
+        return sum;
+
+    }
+
+    public BufferedImage scorePolygonImage(Rect rect){
+
+        // Get score image, invert, mask everything except polygon
+
+        // Get score image, invert, mask everything except polygon
+
+        BufferedImage baseImgWithRect = createImageWithRect(rect);
+        double[][] diffArr2 = subRealImages(baseImgWithRect, targetImage);
+        diffArr2 = invertArr(diffArr2);
+
+        BufferedImage polyImage = createRectMask(rect);
+        double[][] maskArr = arrFromImg(polyImage);
+        double[][] invertedMask = invertArr(maskArr);
+
+        double[][] finalArr = (mask(diffArr2, invertedMask));
+
+        return imgFromArr(finalArr);
+    }
+
+    double[][] invertArr(double[][] arr){
+
+        double[][] newArr = new double[arr.length][arr[0].length];
+        for (int i = 0; i < arr.length; i++) {
+            for (int j = 0; j < arr[0].length; j++) {
+                newArr[i][j] = 1-arr[i][j];
+            }
+        }
+        return newArr;
+    }
+
+    public static double[][] arrFromImg(BufferedImage img){
+        double[][] outArr = new double[img.getWidth()][img.getHeight()];
+
+        for (int x = 0; x < img.getWidth(); x++) {
+            for (int y = 0; y < img.getHeight(); y++) {
+
+                int thisRGB = img.getRGB(x, y);
+                Color c = new Color(thisRGB);
+
+                outArr[x][y] = Math.sqrt(c.getRed()*c.getRed() + c.getGreen()*c.getGreen() + c.getBlue()*c.getBlue()) / COLOR_SPACE_SIZE;
+    
+            }
+        }
+        return outArr;
+    }
+
+    public static double[][] mask(double[][] arr, double[][] mask){
+        double[][] newArr = new double[arr.length][arr[0].length];
+        for (int i = 0; i < arr.length; i++) {
+            for (int j = 0; j < arr[0].length; j++) {
+                if(mask[i][j] == 0){
+                    newArr[i][j] = 0;
+                }
+                else{
+                    newArr[i][j] = arr[i][j];
+                }
+
+            }
+        }
+        return newArr;
+    }
+
+    public BufferedImage createRectMask(Rect rect){
+
+        this.repaint();
+
+        int w = this.width;
+        int h = this.height;
+        BufferedImage bi = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
+        Graphics2D g = bi.createGraphics();
+        
+        g.setColor(Color.white);
+        g.fillRect(0, 0, w, h);
+        rect.draw(g, true);
+        
+        g.dispose();
+        return bi;
+
+    }
+
+
+    public static double sumSubbedImages(double[][] img1, double[][] img2){
+        double sum = 0;
+        for (int x = 0; x < img1.length; x++) {
+            for (int y = 0; y < img1[0].length; y++) {
+                double val1 = img1[x][y];
+                double val2 = img2[x][y];
+
+                double diff = Math.abs(val1 - val2);
+
+                sum += diff;
+            }
+        }
+
+        if (sum < 0) {
+            System.err.println("SUM LESS THAN 1!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+        }
+
+        return sum;
+    }
+
+
+    
