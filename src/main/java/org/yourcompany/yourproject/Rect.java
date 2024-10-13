@@ -9,7 +9,7 @@ import java.awt.image.BufferedImage;
 
 public final class Rect {
 
-    static Panel mainPanel;
+    static MyCanvas mainPanel;
     static int screenWidth;
     static int screenHeight;
     
@@ -26,12 +26,11 @@ public final class Rect {
     boolean insidePanel = true;
 
     double score = Math.PI; // pi here is very arbitrary
-    double newScore = Math.PI;
 
     private double area = -1;
 
     final static int sizeMax = 50;
-    final static int sizeMin = 2;
+    final static int sizeMin = 5;
 
     public Rect(int x, int y, int w, int h, double rot, int r, int g, int b){
         xPos = x;
@@ -59,20 +58,9 @@ public final class Rect {
 
     }
 
-    public double getScore(BufferedImage targetImage){
-        if(score != Math.PI){
+    public double getScore(BufferedImage targetImage, double[][] baseScoreArr){
+        if (score != Math.PI) {
             return score;
-        }
-
-        double[][] diff = Panel.subRealImages(mainPanel.createImageWithRect(this), targetImage);
-         
-        score = getArea()/Math.sqrt(Panel.sumArr(diff)); // This will probably promote moving off screen
-        return score; 
-    }
-
-    public double getNewScore(BufferedImage targetImage, double[][] baseScoreArr){
-        if (newScore != Math.PI) {
-            return newScore;
         }
 
         Point topAndBottom = PolyStuff.getTopAndBottom(intersectionPoly);
@@ -86,17 +74,20 @@ public final class Rect {
         for(int y = topAndBottom.x; y < topAndBottom.y; y++){
             Point startAndEnd = PolyStuff.getStartAndEnd(intersectionPoly, y, lineTopsAndBottoms);
             for (int x = startAndEnd.x; x < startAndEnd.y; x++) {
-                rectScore += Panel.colorDifRGB(rectColor.getRGB(), targetImage.getRGB(x, y));
+                rectScore += MyCanvas.colorDifRGB(rectColor.getRGB(), targetImage.getRGB(x, y));
                 baseScore += baseScoreArr[x][y];
             }
         }
-        newScore = (baseScore - rectScore);
+        score = (baseScore - rectScore);
 
-        return newScore;
+        return score;
     }
 
     public int compareTo(Rect other){
-        double diff = -(mainPanel.scoreLocal(this)-mainPanel.scoreLocal(other));
+        //double diff = -(mainPanel.scoreLocal(this)-mainPanel.scoreLocal(other));
+        BufferedImage targetImage = mainPanel.targetImage;
+        double[][] baseScoreArr = mainPanel.baseScoreArr;
+        double diff = -(this.getScore(targetImage, baseScoreArr)-other.getScore(targetImage, baseScoreArr));
         return (int) Math.signum(diff);
     }
 
@@ -146,7 +137,7 @@ public final class Rect {
         return new Rect(x, y, w, h, rot, r, g, b);
     }
 
-    public static void setMainPanel(Panel p){
+    public static void setMainPanel(MyCanvas p){
         Rect.mainPanel = p;
     }
 
