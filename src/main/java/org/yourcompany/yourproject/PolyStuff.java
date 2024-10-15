@@ -142,9 +142,9 @@ public class PolyStuff {
             // if slope is -, the line goes down going counter clockwise vise versa, if 0, horizontal
             int yPtA = poly.ypoints[i];
             int yPtB = poly.ypoints[(i+1)%poly.npoints];
-            int slope = yPtA - yPtB;
+            int direction = yPtA - yPtB;
 
-            tbds[i] = new TBD(Math.min(yPtA, yPtB), Math.max(yPtA, yPtB), slope < 0);
+            tbds[i] = new TBD(Math.min(yPtA, yPtB), Math.max(yPtA, yPtB), direction < 0);
         }
         return tbds;
     }
@@ -164,13 +164,9 @@ public class PolyStuff {
                 int xDiff = poly.xpoints[i]-poly.xpoints[(i+1)%poly.npoints];
                 int yDiff = poly.ypoints[i]-poly.ypoints[(i+1)%poly.npoints];
 
-                if (yDiff == 0) {
-                    System.out.println(Integer.toString(top) + " : " + Integer.toString(bottom));
-                }
+                double lineSlope = (double)xDiff/yDiff;
 
-                double lineSlope = xDiff/yDiff;
-
-                Point linePt; 
+                Point linePt;
                 if (poly.ypoints[i] < poly.ypoints[(i+1)%poly.npoints]) {
                     linePt = new Point(poly.xpoints[i], poly.ypoints[i]);
                 } else {

@@ -1,15 +1,13 @@
 package org.yourcompany.yourproject;
 
 import java.awt.Color;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Polygon;
 import java.awt.image.BufferedImage;
 
 public final class Rect {
 
-    static MyCanvas mainPanel;
+    static MyCanvas mainCanvas;
     static int screenWidth;
     static int screenHeight;
     
@@ -23,7 +21,7 @@ public final class Rect {
     final int blue;
 
     Polygon intersectionPoly;
-    boolean insidePanel = true;
+    boolean insideCanvas = true;
 
     double score = Math.PI; // pi here is very arbitrary
 
@@ -43,19 +41,7 @@ public final class Rect {
         green = g;
         blue = b;
 
-        intersectionPoly = getPanelIntersection();
-    }
-
-    public void draw(Graphics g){
-
-        Graphics2D g2d = (Graphics2D) g.create();
-        g2d.setColor(new Color(red,green,blue));
-
-        g2d.rotate(rotation, xPos, yPos);
-        g2d.fillRect(xPos - width/2, yPos - height/2, width, height);
-
-        g2d.dispose();
-
+        intersectionPoly = getCanvasIntersection();
     }
 
     public double getScore(BufferedImage targetImage, double[][] baseScoreArr){
@@ -84,9 +70,9 @@ public final class Rect {
     }
 
     public int compareTo(Rect other){
-        //double diff = -(mainPanel.scoreLocal(this)-mainPanel.scoreLocal(other));
-        BufferedImage targetImage = mainPanel.targetImage;
-        double[][] baseScoreArr = mainPanel.baseScoreArr;
+        //double diff = -(mainCanvas.scoreLocal(this)-mainCanvas.scoreLocal(other));
+        BufferedImage targetImage = mainCanvas.targetImage;
+        double[][] baseScoreArr = mainCanvas.baseScoreArr;
         double diff = -(this.getScore(targetImage, baseScoreArr)-other.getScore(targetImage, baseScoreArr));
         return (int) Math.signum(diff);
     }
@@ -137,8 +123,8 @@ public final class Rect {
         return new Rect(x, y, w, h, rot, r, g, b);
     }
 
-    public static void setMainPanel(MyCanvas p){
-        Rect.mainPanel = p;
+    public static void setmainCanvas(MyCanvas p){
+        Rect.mainCanvas = p;
     }
 
     public static void setScreenSize(int screenWidth_, int screenHeight_){
@@ -147,7 +133,7 @@ public final class Rect {
     }
 
 
-    public Polygon getPanelIntersection(){
+    public Polygon getCanvasIntersection(){
 
         double cos = Math.cos(rotation);
         double sin = Math.sin(rotation);
@@ -165,17 +151,17 @@ public final class Rect {
         Polygon rectPoly = new Polygon(xPointsRect, yPointsRect, 4);
 
 
-        int[] xPointsPanel = {0,0,screenWidth,screenWidth};
-        int[] yPointsPanel = {0,screenHeight,screenHeight,0};
-        Polygon panelPoly = new Polygon(xPointsPanel,yPointsPanel,4);
+        int[] xPointsCanvas = {0,0,screenWidth,screenWidth};
+        int[] yPointsCanvas = {0,screenHeight,screenHeight,0};
+        Polygon canvasPoly = new Polygon(xPointsCanvas,yPointsCanvas,4);
 
         Polygon polyUnion;
         
         if (rectPoly.intersects(0, 0, screenWidth, screenHeight)){
-            polyUnion = PolyStuff.polygonUnion(rectPoly, panelPoly);
+            polyUnion = PolyStuff.polygonUnion(rectPoly, canvasPoly);
         } else {
             polyUnion = rectPoly;
-            insidePanel = false;
+            insideCanvas = false;
         }
         
         return polyUnion;

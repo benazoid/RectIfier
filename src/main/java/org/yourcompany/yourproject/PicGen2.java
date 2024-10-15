@@ -11,13 +11,13 @@ import java.util.ArrayList;
 
 import javax.imageio.ImageIO;
 
-public class PicGen2 {
+public final class PicGen2 {
 
     String targetImgSrc = "images/cat.jpg";
     double imgDownScale = 1;
     BufferedImage targetImg;
 
-    MyCanvas mainPanel;
+    MyCanvas mainCanvas;
 
     ArrayList<Rect> contestants = new ArrayList<>();
     ArrayList<Rect> rectList = new ArrayList<>();
@@ -32,26 +32,32 @@ public class PicGen2 {
     public PicGen2(){
         targetImg = scaleImg(getImage(targetImgSrc), imgDownScale);
 
-        mainPanel = new MyCanvas(targetImg);
-        Rect.setMainPanel(mainPanel);
+        mainCanvas = new MyCanvas(targetImg);
+        Rect.setmainCanvas(mainCanvas);
         Rect.setScreenSize(targetImg.getWidth(), targetImg.getHeight());
 
         screen = new ScreenStuff(targetImg.getWidth(), targetImg.getHeight());
 
+        //test();
         run();
 
-    }     
+    }
+
+    public void test(){
+        //mainCanvas.addToCurrentImage(Rect.random());
+        //screen.setCanvasImage(mainCanvas.currentImage);
+    }
 
     public void run(){
         outerloop:
         for (int rectIndex = 0; rectIndex < rectAmt; rectIndex++) {
-            mainPanel.updateBaseScoreArr();
+            mainCanvas.updateBaseScoreArr();
 
             // Repopulate contestants with random rects
             contestants.clear();
             while (contestants.size() < genSize) {
                 Rect r = Rect.random();
-                if(r.insidePanel)
+                if(r.insideCanvas)
                     contestants.add(r);
             }
             
@@ -72,9 +78,9 @@ public class PicGen2 {
             }
 
             rectList.add(contestants.get(0));
-            mainPanel.addToCurrentImage(contestants.get(0));
+            mainCanvas.addToCurrentImage(contestants.get(0));
 
-            screen.setCanvasImage(mainPanel.currentImage);
+            screen.setCanvasImage(mainCanvas.currentImage);
             
         }
 
@@ -82,7 +88,7 @@ public class PicGen2 {
 
         System.out.println("done");
 
-        BufferedImage img = mainPanel.currentImage;
+        BufferedImage img = mainCanvas.currentImage;
 
         try {
             File outputfile = new File("outImage.jpg");
@@ -106,7 +112,7 @@ public class PicGen2 {
         // have remaining produce as much to refill
         repopulate();
         Rect bestRect = contestants.get(0);
-        double score = bestRect.getScore(targetImg, mainPanel.baseScoreArr);
+        double score = bestRect.getScore(targetImg, mainCanvas.baseScoreArr);
 
         // repeat
         return score;

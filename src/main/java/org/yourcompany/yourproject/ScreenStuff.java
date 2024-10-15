@@ -44,7 +44,6 @@ public class ScreenStuff extends JPanel{
 
         g.drawImage(canvasImage, 0, 0, this);
 
-        System.out.println("draw");
     }
 
     private static class Closer extends java.awt.event.WindowAdapter 
