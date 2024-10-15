@@ -10,6 +10,9 @@ public final class Rect {
     static MyCanvas mainCanvas;
     static int screenWidth;
     static int screenHeight;
+
+    final static int SIZE_MAX = 50;
+    final static int SIZE_MIN = 5;
     
     final int xPos;
     final int yPos;
@@ -20,15 +23,10 @@ public final class Rect {
     final int green;
     final int blue;
 
-    Polygon intersectionPoly;
-    boolean insideCanvas = true;
+    private Polygon intersectionPoly;
+    private boolean insideCanvas = true;
 
-    double score = Math.PI; // pi here is very arbitrary
-
-    private double area = -1;
-
-    final static int sizeMax = 50;
-    final static int sizeMin = 5;
+    private double score = Math.PI; // pi here is very arbitrary
 
     public Rect(int x, int y, int w, int h, double rot, int r, int g, int b){
         xPos = x;
@@ -71,39 +69,10 @@ public final class Rect {
 
     public int compareTo(Rect other){
         //double diff = -(mainCanvas.scoreLocal(this)-mainCanvas.scoreLocal(other));
-        BufferedImage targetImage = mainCanvas.targetImage;
-        double[][] baseScoreArr = mainCanvas.baseScoreArr;
+        BufferedImage targetImage = mainCanvas.getTargetImage();
+        double[][] baseScoreArr = mainCanvas.getBaseScoreArr();
         double diff = -(this.getScore(targetImage, baseScoreArr)-other.getScore(targetImage, baseScoreArr));
         return (int) Math.signum(diff);
-    }
-
-    public static Rect random(){
-        
-
-        int x = (int)(Math.random() * screenWidth);
-        int y = (int)(Math.random() * screenHeight);
-        int w = sizeMin + (int)(Math.random() * (sizeMax-sizeMin));
-        int h = sizeMin + (int)(Math.random() * (sizeMax-sizeMin));
-        double rot = Math.random() * 2 * Math.PI; 
-        int r = (int)(Math.random() * 255);
-        int g = (int)(Math.random() * 255);
-        int b = (int)(Math.random() * 255);
-        return new Rect(x, y, w, h, rot, r, g, b);
-    }
-
-    public static double getRandomInRange(double origin, double min, double max, double mutationAmt){
-        double localRange = (max-min) * mutationAmt;
-
-        double newNum = origin + (Math.random() * 2 - 1) * localRange;
-
-        if (newNum < min) {
-            newNum = min;
-        } 
-        if (newNum > max) {
-            newNum = max;
-        }
-        //System.out.println(Double.toString(newNum-origin) + ": " + Double.toString(max));
-        return newNum;
     }
 
     // mutationAmt is the % of the full range available to mutate to
@@ -111,8 +80,8 @@ public final class Rect {
         int x = (int) getRandomInRange(xPos, 0, screenWidth, mutationAmt);
         int y = (int) getRandomInRange(yPos, 0, screenHeight, mutationAmt);
 
-        int w = (int) getRandomInRange(width, sizeMin, sizeMax, mutationAmt);
-        int h = (int) getRandomInRange(width, sizeMin, sizeMax, mutationAmt);
+        int w = (int) getRandomInRange(width, SIZE_MIN, SIZE_MAX, mutationAmt);
+        int h = (int) getRandomInRange(width, SIZE_MIN, SIZE_MAX, mutationAmt);
 
         double rot  = getRandomInRange(rotation, 0, 2*Math.PI, mutationAmt);
 
@@ -122,16 +91,6 @@ public final class Rect {
         
         return new Rect(x, y, w, h, rot, r, g, b);
     }
-
-    public static void setmainCanvas(MyCanvas p){
-        Rect.mainCanvas = p;
-    }
-
-    public static void setScreenSize(int screenWidth_, int screenHeight_){
-        screenWidth = screenWidth_;
-        screenHeight = screenHeight_;
-    }
-
 
     public Polygon getCanvasIntersection(){
 
@@ -167,12 +126,53 @@ public final class Rect {
         return polyUnion;
     }
 
-    public double getArea(){
-        if (area >= 0) {
-            return area;
+    // Static methods
+
+    public static Rect random(){
+        
+        int x = (int)(Math.random() * screenWidth);
+        int y = (int)(Math.random() * screenHeight);
+        int w = SIZE_MIN + (int)(Math.random() * (SIZE_MAX-SIZE_MIN));
+        int h = SIZE_MIN + (int)(Math.random() * (SIZE_MAX-SIZE_MIN));
+        double rot = Math.random() * 2 * Math.PI; 
+        int r = (int)(Math.random() * 255);
+        int g = (int)(Math.random() * 255);
+        int b = (int)(Math.random() * 255);
+        return new Rect(x, y, w, h, rot, r, g, b);
+    }
+
+    public static double getRandomInRange(double origin, double min, double max, double mutationAmt){
+        double localRange = (max-min) * mutationAmt;
+
+        double newNum = origin + (Math.random() * 2 - 1) * localRange;
+
+        if (newNum < min) {
+            newNum = min;
+        } 
+        if (newNum > max) {
+            newNum = max;
         }
-        area =  PolyStuff.getArea(intersectionPoly);
-        return area;
+        //System.out.println(Double.toString(newNum-origin) + ": " + Double.toString(max));
+        return newNum;
+    }
+
+    public static void setmainCanvas(MyCanvas p){
+        Rect.mainCanvas = p;
+    }
+
+    public static void setScreenSize(int screenWidth_, int screenHeight_){
+        screenWidth = screenWidth_;
+        screenHeight = screenHeight_;
+    }
+
+    // Getters and setters
+
+    public Polygon getIntesectionPoly(){
+        return intersectionPoly;
+    }
+
+    public boolean isInsideCanvas(){
+        return insideCanvas;
     }
 
 }

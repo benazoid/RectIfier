@@ -9,9 +9,9 @@ import javax.swing.JPanel;
 
 public class ScreenStuff extends JPanel{
     
-    JFrame frame;
+    private final JFrame frame;
 
-    BufferedImage canvasImage;
+    private BufferedImage canvasImage;
 
     public ScreenStuff(int width_, int height_){
         super();

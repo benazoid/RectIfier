@@ -13,21 +13,21 @@ import javax.imageio.ImageIO;
 
 public final class PicGen2 {
 
-    String targetImgSrc = "images/cat.jpg";
-    double imgDownScale = 1;
-    BufferedImage targetImg;
+    private final String targetImgSrc = "images/cat.jpg";
+    private final double imgDownScale = 1;
+    private BufferedImage targetImg;
 
-    MyCanvas mainCanvas;
+    private MyCanvas mainCanvas;
 
-    ArrayList<Rect> contestants = new ArrayList<>();
-    ArrayList<Rect> rectList = new ArrayList<>();
+    private ArrayList<Rect> contestants = new ArrayList<>();
+    private ArrayList<Rect> rectList = new ArrayList<>();
 
-    ScreenStuff screen;
+    private ScreenStuff screen;
 
-    final int rectAmt = 5000;
-    final int genAmt = 50;
-    final int genSize = 30;
-    final double mutationAmt = 0.5;
+    private final int rectAmt = 5000;
+    private final int genAmt = 50;
+    private final int genSize = 30;
+    private final double mutationAmt = 0.5;
 
     public PicGen2(){
         targetImg = scaleImg(getImage(targetImgSrc), imgDownScale);
@@ -38,17 +38,11 @@ public final class PicGen2 {
 
         screen = new ScreenStuff(targetImg.getWidth(), targetImg.getHeight());
 
-        //test();
         run();
 
     }
 
-    public void test(){
-        //mainCanvas.addToCurrentImage(Rect.random());
-        //screen.setCanvasImage(mainCanvas.currentImage);
-    }
-
-    public void run(){
+    private void run(){
         outerloop:
         for (int rectIndex = 0; rectIndex < rectAmt; rectIndex++) {
             mainCanvas.updateBaseScoreArr();
@@ -57,7 +51,7 @@ public final class PicGen2 {
             contestants.clear();
             while (contestants.size() < genSize) {
                 Rect r = Rect.random();
-                if(r.insideCanvas)
+                if(r.isInsideCanvas())
                     contestants.add(r);
             }
             
@@ -80,7 +74,7 @@ public final class PicGen2 {
             rectList.add(contestants.get(0));
             mainCanvas.addToCurrentImage(contestants.get(0));
 
-            screen.setCanvasImage(mainCanvas.currentImage);
+            screen.setCanvasImage(mainCanvas.getCurrentImage());
             
         }
 
@@ -88,7 +82,7 @@ public final class PicGen2 {
 
         System.out.println("done");
 
-        BufferedImage img = mainCanvas.currentImage;
+        BufferedImage img = mainCanvas.getCurrentImage();
 
         try {
             File outputfile = new File("outImage.jpg");
@@ -99,7 +93,7 @@ public final class PicGen2 {
         
     }
 
-    public final double runGeneration(){
+    private final double runGeneration(){
         // sort contestants best to worst
         contestants.sort((r1,r2)->r1.compareTo(r2));
 
@@ -112,13 +106,13 @@ public final class PicGen2 {
         // have remaining produce as much to refill
         repopulate();
         Rect bestRect = contestants.get(0);
-        double score = bestRect.getScore(targetImg, mainCanvas.baseScoreArr);
+        double score = bestRect.getScore(targetImg, mainCanvas.getBaseScoreArr());
 
         // repeat
         return score;
     }
 
-    public void repopulate(){
+    private void repopulate(){
 
         final int ogSize = contestants.size();
 
@@ -146,12 +140,12 @@ public final class PicGen2 {
         for (int i = 0; i < rectList.size(); i++) {
             Rect r = rectList.get(rectList.size()-i-1);
             
-            Point topAndBottom = PolyStuff.getTopAndBottom(r.intersectionPoly);
-            PolyStuff.TBD[] lineTopsAndBottoms = PolyStuff.getTopBottomDirection(r.intersectionPoly);
+            Point topAndBottom = PolyStuff.getTopAndBottom(r.getIntesectionPoly());
+            PolyStuff.TBD[] lineTopsAndBottoms = PolyStuff.getTopBottomDirection(r.getIntesectionPoly());
 
             boolean remove = true;
             for(int y = topAndBottom.x; y < topAndBottom.y; y++){
-                Point startAndEnd = PolyStuff.getStartAndEnd(r.intersectionPoly, y, lineTopsAndBottoms);
+                Point startAndEnd = PolyStuff.getStartAndEnd(r.getIntesectionPoly(), y, lineTopsAndBottoms);
                 for (int x = startAndEnd.x; x < startAndEnd.y; x++) {
                     // If there's nothing behind it
                     if (layersArr[x][y] == 0) {
@@ -167,7 +161,7 @@ public final class PicGen2 {
             }
 
             for(int y = topAndBottom.x; y < topAndBottom.y; y++){
-                Point startAndEnd = PolyStuff.getStartAndEnd(r.intersectionPoly, y, lineTopsAndBottoms);
+                Point startAndEnd = PolyStuff.getStartAndEnd(r.getIntesectionPoly(), y, lineTopsAndBottoms);
                 for (int x = startAndEnd.x; x < startAndEnd.y; x++) {
                     layersArr[x][y]--;
                 }
@@ -179,7 +173,7 @@ public final class PicGen2 {
 
     }
 
-    private BufferedImage getImage(String filename) {
+    public BufferedImage getImage(String filename) {
         // This time, you can use an InputStream to load
         try {
             // Grab the InputStream for the image.                    
@@ -195,7 +189,7 @@ public final class PicGen2 {
         return null;
     }
 
-    private BufferedImage scaleImg(BufferedImage original, double scale){
+    public static BufferedImage scaleImg(BufferedImage original, double scale){
 
         int newWidth = (int)(original.getWidth() * scale);
         int newHeight = (int)(original.getHeight() * scale);

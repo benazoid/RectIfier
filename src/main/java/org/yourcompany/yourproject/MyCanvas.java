@@ -7,11 +7,11 @@ import java.awt.image.BufferedImage;
 
 public class MyCanvas {
 
-    BufferedImage targetImage;
+    private final BufferedImage targetImage;
 
-    double[][] baseScoreArr;
+    private double[][] baseScoreArr;
 
-    BufferedImage currentImage;
+    private final BufferedImage currentImage;
 
 
     public MyCanvas(BufferedImage targetImage_){
@@ -23,6 +23,37 @@ public class MyCanvas {
                 currentImage.setRGB(i, j, (Color.white).getRGB());
             }
         }
+    }
+
+    
+    public void updateBaseScoreArr(){
+        double[][] diff = subRealImages(currentImage, targetImage);
+        baseScoreArr = diff;
+    }
+
+    public void addToCurrentImage(Rect r){
+        Point topAndBottom = PolyStuff.getTopAndBottom(r.getIntesectionPoly());
+        PolyStuff.TBD[] lineTopsAndBottoms = PolyStuff.getTopBottomDirection(r.getIntesectionPoly());
+        for(int y = topAndBottom.x; y < topAndBottom.y; y++){
+            Point startAndEnd = PolyStuff.getStartAndEnd(r.getIntesectionPoly(), y, lineTopsAndBottoms);
+            for (int x = startAndEnd.x; x < startAndEnd.y; x++) {
+                Color c = new Color(r.red, r.green, r.blue);
+                currentImage.setRGB(x, y, c.getRGB());
+            }
+        }
+    }
+
+    // Static methods
+
+    public static double colorDifRGB(int rgb1, int rgb2){
+        Color c1 = new Color(rgb1);
+        Color c2 = new Color(rgb2);
+
+        float r = (c1.getRed()-c2.getRed());
+        float g = (c1.getGreen()-c2.getGreen());
+        float b = (c1.getBlue()-c2.getBlue());
+
+        return (r*r + g*g + b*b);
     }
 
     public static double[][] subRealImages(BufferedImage img1, BufferedImage img2){
@@ -40,34 +71,6 @@ public class MyCanvas {
         }
         return outArr;
 
-    }
-
-    public void updateBaseScoreArr(){
-        double[][] diff = subRealImages(currentImage, targetImage);
-        baseScoreArr = diff;
-    }
-
-    public static double colorDifRGB(int rgb1, int rgb2){
-        Color c1 = new Color(rgb1);
-        Color c2 = new Color(rgb2);
-
-        float r = (c1.getRed()-c2.getRed());
-        float g = (c1.getGreen()-c2.getGreen());
-        float b = (c1.getBlue()-c2.getBlue());
-
-        return (r*r + g*g + b*b);
-    }
-
-    public void addToCurrentImage(Rect r){
-        Point topAndBottom = PolyStuff.getTopAndBottom(r.intersectionPoly);
-        PolyStuff.TBD[] lineTopsAndBottoms = PolyStuff.getTopBottomDirection(r.intersectionPoly);
-        for(int y = topAndBottom.x; y < topAndBottom.y; y++){
-            Point startAndEnd = PolyStuff.getStartAndEnd(r.intersectionPoly, y, lineTopsAndBottoms);
-            for (int x = startAndEnd.x; x < startAndEnd.y; x++) {
-                Color c = new Color(r.red, r.green, r.blue);
-                currentImage.setRGB(x, y, c.getRGB());
-            }
-        }
     }
     
     public static double sumArr(double[][] arr){
@@ -100,6 +103,20 @@ public class MyCanvas {
             }
         }
         return outArr;
+    }
+
+    // Getters and Setters
+
+    public BufferedImage getCurrentImage(){
+        return currentImage;
+    }
+
+    public double[][] getBaseScoreArr(){
+        return baseScoreArr;
+    }
+
+    public BufferedImage getTargetImage(){
+        return targetImage;
     }
 
 }
