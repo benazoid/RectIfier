@@ -37,8 +37,7 @@ public class MyCanvas {
         for(int y = topAndBottom.x; y < topAndBottom.y; y++){
             Point startAndEnd = PolyStuff.getStartAndEnd(r.getIntesectionPoly(), y, lineTopsAndBottoms);
             for (int x = startAndEnd.x; x < startAndEnd.y; x++) {
-                Color c = new Color(r.red, r.green, r.blue);
-                currentImage.setRGB(x, y, c.getRGB());
+                currentImage.setRGB(x, y, r.color.getRGB());
             }
         }
     }

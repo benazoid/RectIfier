@@ -7,11 +7,10 @@ import java.awt.image.BufferedImage;
 
 public final class Rect {
 
-    static MyCanvas mainCanvas;
     static int screenWidth;
     static int screenHeight;
 
-    final static int SIZE_MAX = 50;
+    final static int SIZE_MAX = 100;
     final static int SIZE_MIN = 5;
     
     final int xPos;
@@ -19,27 +18,27 @@ public final class Rect {
     final int width;
     final int height;
     final double rotation;
-    final int red;
-    final int green;
-    final int blue;
+    final Color color;
+
+    final BufferedImage targetImg;
 
     private Polygon intersectionPoly;
     private boolean insideCanvas = true;
 
     private double score = Math.PI; // pi here is very arbitrary
 
-    public Rect(int x, int y, int w, int h, double rot, int r, int g, int b){
+    public Rect(int x, int y, int w, int h, double rot, BufferedImage targetImg_){
         xPos = x;
         yPos = y;
         width = w;
         height = h;
         rotation = rot;
 
-        red = r;
-        green = g;
-        blue = b;
+        targetImg = targetImg_;
 
         intersectionPoly = getCanvasIntersection();
+
+        color = getAverageColor(targetImg);
     }
 
     public double getScore(BufferedImage targetImage, double[][] baseScoreArr){
@@ -50,15 +49,13 @@ public final class Rect {
         Point topAndBottom = PolyStuff.getTopAndBottom(intersectionPoly);
         PolyStuff.TBD[] lineTopsAndBottoms = PolyStuff.getTopBottomDirection(intersectionPoly);
 
-        Color rectColor = new Color(red, green, blue);
-
         double rectScore = 0;
         double baseScore = 0;
 
         for(int y = topAndBottom.x; y < topAndBottom.y; y++){
             Point startAndEnd = PolyStuff.getStartAndEnd(intersectionPoly, y, lineTopsAndBottoms);
             for (int x = startAndEnd.x; x < startAndEnd.y; x++) {
-                rectScore += MyCanvas.colorDifRGB(rectColor.getRGB(), targetImage.getRGB(x, y));
+                rectScore += MyCanvas.colorDifRGB(color.getRGB(), targetImage.getRGB(x, y));
                 baseScore += baseScoreArr[x][y];
             }
         }
@@ -67,11 +64,9 @@ public final class Rect {
         return score;
     }
 
-    public int compareTo(Rect other){
+    public int compareTo(Rect other, double[][] baseScoreArr){
         //double diff = -(mainCanvas.scoreLocal(this)-mainCanvas.scoreLocal(other));
-        BufferedImage targetImage = mainCanvas.getTargetImage();
-        double[][] baseScoreArr = mainCanvas.getBaseScoreArr();
-        double diff = -(this.getScore(targetImage, baseScoreArr)-other.getScore(targetImage, baseScoreArr));
+        double diff = -(this.getScore(targetImg, baseScoreArr)-other.getScore(targetImg, baseScoreArr));
         return (int) Math.signum(diff);
     }
 
@@ -84,12 +79,8 @@ public final class Rect {
         int h = (int) getRandomInRange(width, SIZE_MIN, SIZE_MAX, mutationAmt);
 
         double rot  = getRandomInRange(rotation, 0, 2*Math.PI, mutationAmt);
-
-        int r = (int) getRandomInRange(red, 0, 255, mutationAmt);
-        int g = (int) getRandomInRange(green, 0, 255, mutationAmt);
-        int b = (int) getRandomInRange(blue, 0, 255, mutationAmt);
         
-        return new Rect(x, y, w, h, rot, r, g, b);
+        return new Rect(x, y, w, h, rot, targetImg);
     }
 
     public Polygon getCanvasIntersection(){
@@ -126,19 +117,41 @@ public final class Rect {
         return polyUnion;
     }
 
+    public Color getAverageColor(BufferedImage img){
+        Point topAndBottom = PolyStuff.getTopAndBottom(intersectionPoly);
+        PolyStuff.TBD[] lineTopsAndBottoms = PolyStuff.getTopBottomDirection(intersectionPoly);
+
+        double r = 0;
+        double g = 0;
+        double b = 0;
+
+        int ct = 0;
+
+        for(int y = topAndBottom.x; y < topAndBottom.y; y++){
+            Point startAndEnd = PolyStuff.getStartAndEnd(intersectionPoly, y, lineTopsAndBottoms);
+            for (int x = startAndEnd.x; x < startAndEnd.y; x++) {
+                Color c = new Color(img.getRGB(x, y));
+                r += c.getRed();
+                g += c.getGreen();
+                b += c.getBlue();
+                ct++;
+            }
+        }
+
+        return new Color((int)(r/ct), (int)(g/ct), (int)(b/ct));
+    }
+
     // Static methods
 
-    public static Rect random(){
+    public static Rect random(BufferedImage targetImg){
         
         int x = (int)(Math.random() * screenWidth);
         int y = (int)(Math.random() * screenHeight);
         int w = SIZE_MIN + (int)(Math.random() * (SIZE_MAX-SIZE_MIN));
         int h = SIZE_MIN + (int)(Math.random() * (SIZE_MAX-SIZE_MIN));
         double rot = Math.random() * 2 * Math.PI; 
-        int r = (int)(Math.random() * 255);
-        int g = (int)(Math.random() * 255);
-        int b = (int)(Math.random() * 255);
-        return new Rect(x, y, w, h, rot, r, g, b);
+
+        return new Rect(x, y, w, h, rot, targetImg);
     }
 
     public static double getRandomInRange(double origin, double min, double max, double mutationAmt){
@@ -156,13 +169,14 @@ public final class Rect {
         return newNum;
     }
 
-    public static void setmainCanvas(MyCanvas p){
-        Rect.mainCanvas = p;
-    }
-
     public static void setScreenSize(int screenWidth_, int screenHeight_){
         screenWidth = screenWidth_;
         screenHeight = screenHeight_;
+    }
+
+    @Override
+    public Rect clone(){
+        return new Rect(xPos, yPos, width, height, rotation, targetImg);
     }
 
     // Getters and setters
